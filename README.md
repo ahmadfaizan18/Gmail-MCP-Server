@@ -1,102 +1,184 @@
 # Gmail MCP Server
-A custom MCP server for sending emails through Gmail using mcp clients like Claude desktop.
+
+An MCP server that connects AI assistants to Gmail, enabling email operations through natural-language instructions.
+
+Built with Node.js, the Model Context Protocol (MCP) SDK, the Gmail API, Nodemailer, and OAuth 2.0.
 
 ## Features
-- Send custom emails (App Password or OAuth2)
-- Send professional introduction emails
-- Gmail configuration validation
-- Support for both App Password and OAuth2 authentication
-- HTML and text email support
-- List Gmail labels (OAuth2)
-- List unread emails with optional search query (OAuth2)
-- Retrieve a full email by ID (OAuth2)
-- Archive (remove from INBOX) or trash an email (OAuth2)
-- Simple template engine (Mustache) for reusable email content
-- Send email from template with variable substitution
 
-## Quick Setup
+### Email Sending
+- Send emails with custom recipients, subjects, and message bodies.
+- Supports plain-text and HTML email content.
+- Send introduction emails using a predefined format.
+- Reuse email templates with Mustache variable substitution.
 
-### 1. Install Dependencies
+### Gmail Integration
+- Validate Gmail configuration.
+- List Gmail labels.
+- Retrieve unread emails with optional Gmail search queries.
+- Fetch individual emails by message ID.
+- Archive emails by removing the `INBOX` label.
+- Move emails to the Gmail trash.
+
+### Authentication
+- Gmail App Password authentication for sending emails.
+- OAuth 2.0 authentication for Gmail API operations.
+
+**Note:** Reading, listing, archiving, and trashing emails require OAuth 2.0 configuration.
+
+## Tech Stack
+
+- **Runtime:** Node.js
+- **Language:** JavaScript (ES modules)
+- **AI Integration:** Model Context Protocol (MCP)
+- **Email Sending:** Nodemailer
+- **Gmail API:** Google APIs Node.js client
+- **Authentication:** OAuth 2.0 or Gmail App Password
+- **Templates:** Mustache
+- **Configuration:** dotenv
+
+## Prerequisites
+
+- Node.js and npm
+- A Gmail account
+- An MCP-compatible client, such as Claude Desktop
+- Gmail App Password credentials or Google Cloud OAuth 2.0 credentials, depending on the operations you intend to use
+
+## Installation
+
+Clone your repository and install the dependencies:
+
 ```bash
+git clone https://github.com/ahmadfaizan18/Gmail-MCP-Server.git
+cd Gmail-MCP-Server
 npm install
 ```
 
-### 2. Configure Gmail Authentication
+## Configuration
 
-#### Option A: App Password (Recommended for simplicity)
+Create a `.env` file in the project root.
 
-1. Go to your Google Account settings: https://myaccount.google.com/
-2. Navigate to Security > 2-Step Verification (must be enabled)
-3. Go to Security > 2-Step Verification > App passwords
-4. Generate a new app password for "Mail"
-5. Copy the 16-character password
-6. Update your `.env` file:
-   ```
-   GMAIL_USER = example@example.com
-   GMAIL_AUTH_METHOD=app_password
-   GMAIL_APP_PASSWORD=your_16_character_password_here
-   ```
+### Option A: Gmail App Password
 
-#### Option B: OAuth2 (More secure, requires Google Cloud setup)
+This option supports email sending.
 
-1. Create a project in Google Cloud Console
-2. Enable Gmail API
-3. Create OAuth2 credentials
-4. Get refresh token
-5. Update `.env` with OAuth2 credentials
+1. Enable 2-Step Verification in your Google Account.
+2. Generate an App Password if your account is eligible.
+3. Add your Gmail address and App Password to `.env`.
 
-```
-GMAIL_CLIENT_ID=xxx
-GMAIL_CLIENT_SECRET=xxx
-GMAIL_REDIRECT_URI=https://developers.google.com/oauthplayground
-GMAIL_REFRESH_TOKEN=xxx
+```env
+GMAIL_USER=your_email@gmail.com
+GMAIL_AUTH_METHOD=app_password
+GMAIL_APP_PASSWORD=your_app_password
 ```
 
-Note: Reading/listing/archiving/deleting emails REQUIRES OAuth2. Sending can still work with App Password only.
+Keep your credentials private. Never commit your `.env` file to GitHub.
 
-### 3. Test the Server
+### Option B: OAuth 2.0
+
+OAuth 2.0 is required for Gmail API operations such as listing unread emails, retrieving messages, archiving, and trashing messages.
+
+1. Create a project in Google Cloud Console.
+2. Enable the Gmail API.
+3. Configure OAuth consent and create OAuth 2.0 credentials.
+4. Obtain a refresh token for the Google account you intend to access.
+5. Add the credentials to `.env`.
+
+```env
+GMAIL_CLIENT_ID=your_client_id
+GMAIL_CLIENT_SECRET=your_client_secret
+GMAIL_REDIRECT_URI=your_redirect_uri
+GMAIL_REFRESH_TOKEN=your_refresh_token
+```
+
+Use the redirect URI configured for your OAuth application. Do not publish your client secret or refresh token.
+
+## Running the Server
+
+Start the server:
+
 ```bash
 npm start
 ```
 
-### 4. Add to Claude MCP Config
+The server communicates over standard input and output using the MCP protocol. It is intended to be launched by an MCP client.
 
-Add this to your Claude MCP configuration file:
+## Claude Desktop Configuration
+
+Add an entry for the server to your Claude Desktop MCP configuration.
 
 ```json
 {
   "mcpServers": {
     "gmail": {
       "command": "node",
-      "args": ["/Users/user/Desktop/gmail-mcp/index.js"],
-      "cwd": "/Users/user/Desktop/gmail-mcp"
+      "args": [
+        "/absolute/path/to/Gmail-MCP-Server/index.js"
+      ],
+      "cwd": "/absolute/path/to/Gmail-MCP-Server"
     }
   }
 }
 ```
+
+Replace the example paths with the absolute path to your local project directory. Restart Claude Desktop after updating its configuration.
+
+## Available Tools
+
+The server exposes the following MCP tools:
+
+| Tool | Description |
+|---|---|
+| `send_email` | Send an email with a recipient, subject, and body. |
+| `send_introduction_email` | Send a formatted introduction email. |
+| `check_gmail_config` | Check the Gmail sending configuration. |
+| `list_labels` | Retrieve Gmail labels using OAuth 2.0. |
+| `list_unread_emails` | Retrieve unread messages, optionally filtered by a Gmail search query. |
+| `get_email` | Retrieve an email by message ID. |
+| `archive_email` | Remove an email from the inbox. |
+| `delete_email` | Move an email to the trash. |
+| `list_email_templates` | List available email templates. |
+| `send_template_email` | Send an email using a template and variables. |
+
 ## Usage Examples
 
-Once configured in Claude:
+Once configured in your MCP client, you can issue requests such as:
 
+- "Send an email to someone@example.com with subject Hello and body Test message."
+- "Check whether my Gmail configuration is working."
+- "List my unread emails."
+- "List unread emails from a recruiter."
+- "Retrieve an email using its message ID."
+- "Archive an email using its message ID."
+- "Move an email to the trash using its message ID."
+- "List available email templates."
+- "Send an introduction email using the introduction template."
+
+## Email Templates
+
+Email templates are stored in the `templates/` directory as `.txt` files.
+
+A template may include a `Subject:` line and Mustache placeholders such as `{{recipientName}}`. The server substitutes these placeholders using the variables supplied to the `send_template_email` tool.
+
+For example, a template can use:
+
+```text
+Subject: Following up on {{topic}}
+
+Hi {{recipientName}},
+
+I wanted to follow up on {{topic}}.
+
+Best regards,
+{{name}}
 ```
-"Send an introduction email to yasiraqui211@gmail.com"
-"Check if my Gmail configuration is working"
-"Send an email to someone@example.com with subject 'Hello' and body 'Test message'"
-"List unread emails"
-"List unread emails with query 'from:recruiter'"
-"Get email with id 18c5b9b1a2e3a4b5"
-"Archive email with id 18c5b9b1a2e3a4b5"
-"Delete email with id 18c5b9b1a2e3a4b5"
-"List email templates"
-"Send a template email to user@example.com using template introduction with variables {\"name\":\"Yasir\", \"recipientName\":\"Alex\"}"
 
-### Template Emails
+## Security Notes
+- Keep `.env` out of version control.
+- Never publish Gmail App Passwords, OAuth client secrets, or refresh tokens.
+- Use OAuth credentials only for accounts you are authorized to access.
+- Review the permissions granted to your Google OAuth application.
+- Avoid logging sensitive email contents or authentication credentials.
 
-Templates live in the `templates/` directory. Each template is a `.txt` file and can optionally start with a `Subject:` line. Mustache-style placeholders (`{{variable}}`) are replaced using the `variables` object you pass.
-
-Example command via MCP:
-
-```
-Send a template email to user@example.com using template follow_up with variables {"name":"Yasir","recipientName":"Alex","topic":"our earlier discussion"}
-```
-```
+## License
+See the repository's license file for licensing terms.
