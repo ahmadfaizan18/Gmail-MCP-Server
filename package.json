@@ -16,6 +16,5 @@
   "mustache": "^4.2.0"
   },
   "keywords": ["mcp", "gmail", "email", "automation"],
-  "author": "Mohammad Ovais",
   "license": "MIT"
 }

@@ -82,7 +82,7 @@ class GmailMCPServer {
               type: 'object',
               properties: {
                 to: { type: 'string', description: 'Recipient email address' },
-                name: { type: 'string', description: 'Your name', default: 'Yasir Aquil' },
+                name: { type: 'string', description: 'Your name', default: 'Faizan Ahmad' },
                 customMessage: { type: 'string', description: 'Custom message to include' },
               },
               required: ['to'],
@@ -234,7 +234,7 @@ class GmailMCPServer {
   }
 
   async sendIntroductionEmail(args) {
-    const { to, name = 'Yasir Aquil', customMessage = '' } = args;
+    const { to, name = 'Faizan Ahmad', customMessage = '' } = args;
 
     const subject = `Introduction - ${name}`;
     
